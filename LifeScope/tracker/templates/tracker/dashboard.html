@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f5f5f5;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #ccc;
+        }
+
+        .top-menu {
+            margin-bottom: 20px;
+        }
+
+        .top-menu a, .top-menu button {
+            margin: 0 10px;
+            font-size: 18px;
+            text-decoration: none;
+            color: #0077cc;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        canvas {
+            margin-top: 20px;
+        }
+    </style>
+  </head>
+
+  <body>
+
+    <div class="container">
+
+      <h1>Dashboard</h1>
+
+      <!-- TOP MENU -->
+      <div class="top-menu">
+          <a href="{% url 'tracker:add_data' %}">Add Data</a> |
+          <a href="{% url 'tracker:history' %}">History</a> |
+          <a href="{% url 'tracker:predict' %}">Predict</a>
+
+          <form action="{% url 'logout' %}" method="post" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" style="background:none;border:none;color:#0077cc;cursor:pointer;">
+                  Logout
+              </button>
+          </form>
+      </div>
+
+      <!-- LINE CHART -->
+      <h2>Steps Trend (Line Chart)</h2>
+      <canvas id="lineChart" width="400" height="150"></canvas>
+
+      <!-- BAR CHART -->
+      <h2>Steps Bar Chart</h2>
+      <canvas id="barChart" width="400" height="150"></canvas>
+
+    </div>
+
+
+    <script>
+      const labels = {{ dates|safe }};
+      const steps = {{ steps|safe }};
+
+      /* LINE CHART */
+      new Chart(document.getElementById('lineChart'), {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Steps',
+            data: steps,
+            fill: false,
+            borderColor: 'blue',
+            tension: 0.3
+          }]
+        }
+      });
+
+      /* BAR CHART WITH FIXED DAY COLORS */
+      const dayColors = {
+          0: "blue",    // Monday
+          1: "green",   // Tuesday
+          2: "red",     // Wednesday
+          3: "orange",  // Thursday
+          4: "purple",  // Friday
+          5: "yellow",  // Saturday
+          6: "pink"     // Sunday
+      };
+
+      const barColors = labels.map(dateStr => {
+          const dayIndex = new Date(dateStr).getDay();
+          return dayColors[dayIndex];
+      });
+
+      new Chart(document.getElementById('barChart'), {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Steps',
+            data: steps,
+            backgroundColor: barColors,
+            borderWidth: 1
+          }]
+        }
+      });
+    </script>
+
+  </body>
+</html>
+
